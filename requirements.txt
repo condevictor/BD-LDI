@@ -1,3 +1,15 @@
-psycopg2-binary==2.9.9
-pandas==2.2.2
-numpy==1.26.4
+# Dependências do Sistema BD-LDI
+# Instalar com: pip install -r requirements.txt
+
+# Interface Web
+streamlit>=1.28.0
+plotly>=5.17.0
+
+# Banco de Dados
+psycopg2-binary>=2.9.7
+
+# Manipulação de Dados
+pandas>=2.1.0
+
+# Configurações
+configparser

@@ -26,8 +26,7 @@ services:
 
 networks:
   default:
-    name: local-network
-    external: true
+    driver: bridge
 volumes:
     ldi-postgres-data:
     ldi-pgadmin-data:
