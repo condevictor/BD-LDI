@@ -449,7 +449,7 @@ INSERT INTO experiencia_avaliada (id_reserva, id_avaliacao) VALUES
 -- Sincronizadas com apresentacao_ldi.py para apresentação consistente
 
 -- =============================================================================
--- 🏢 CONSULTAS OPERACIONAIS BÁSICAS (4 consultas)
+-- CONSULTAS OPERACIONAIS BÁSICAS (4 consultas)
 -- =============================================================================
 
 -- Consulta 1: USUÁRIOS E SEUS PERFIS
@@ -472,9 +472,9 @@ ORDER BY u.nome;
 -- Consulta 2: IMÓVEIS DISPONÍVEIS E SUAS CARACTERÍSTICAS
 SELECT 
     i.titulo,
-    i.cidade || ', ' || i.estado as localizacao,
+    CONCAT(i.cidade, ', ', i.estado) as localizacao,
     i.capacidade_max as capacidade,
-    'R$ ' || i.valor_diaria as diaria,
+    CONCAT('R$ ', i.valor_diaria) as diaria,
     pc.tipo_politica as politica,
     COUNT(DISTINCT c.comodidade) as total_comodidades
 FROM imovel i
@@ -504,9 +504,9 @@ ORDER BY r.data_inicio DESC;
 -- Consulta 4: DISPONIBILIDADE DE IMÓVEIS - CONSULTA PRÁTICA
 SELECT 
     i.titulo,
-    i.cidade || ', ' || i.estado as localizacao,
+    CONCAT(i.cidade, ', ', i.estado) as localizacao,
     i.capacidade_max as capacidade,
-    'R$ ' || i.valor_diaria as diaria_base,
+    CONCAT('R$ ', i.valor_diaria) as diaria_base,
     pc.tipo_politica as politica,
     CASE 
         WHEN EXISTS (
@@ -515,7 +515,7 @@ SELECT
             AND r.status IN ('confirmada', 'pendente')
             AND r.data_inicio <= CURRENT_DATE + INTERVAL '90 days'
             AND r.data_fim >= CURRENT_DATE
-        ) THEN '🟡 Reservado próximos 90 dias'
+        ) THEN 'Reservado próximos 90 dias'
         WHEN EXISTS (
             SELECT 1 FROM reserva r 
             WHERE r.id_imovel = i.id_imovel 
@@ -543,7 +543,7 @@ ORDER BY avaliacao_media DESC, i.valor_diaria ASC;
 -- Consulta 5: ANÁLISE FINANCEIRA - PAGAMENTOS
 SELECT 
     p.id_pagamento as pagamento_id,
-    'R$ ' || p.valor_total as valor,
+    CONCAT('R$ ', p.valor_total) as valor,
     p.forma_pagamento,
     TO_CHAR(p.data_pagamento, 'DD/MM/YYYY') as data_pag,
     COALESCE(COUNT(pa.num_parcelas), 0) as total_parcelas,
@@ -561,7 +561,7 @@ ORDER BY p.data_pagamento DESC;
 SELECT 
     i.titulo, 
     COUNT(r.id_reserva) as total_reservas,
-    'R$ ' || COALESCE(SUM(p.valor_total), 0) AS receita_total
+    CONCAT('R$ ', COALESCE(SUM(p.valor_total), 0)) AS receita_total
 FROM imovel i
 LEFT JOIN reserva r ON i.id_imovel = r.id_imovel AND r.status = 'confirmada'
 LEFT JOIN gera g ON r.id_reserva = g.id_reserva
@@ -573,16 +573,16 @@ ORDER BY COALESCE(SUM(p.valor_total), 0) DESC;
 SELECT 
     u.nome as hospede,
     i.titulo as imovel,
-    'R$ ' || pg.valor_total as valor_total,
+    CONCAT('R$ ', pg.valor_total) as valor_total,
     pg.forma_pagamento,
-    'Parcela ' || p.num_parcelas as parcela,
-    'R$ ' || p.valor_parcela as valor_parcela,
+    CONCAT('Parcela ', p.num_parcelas) as parcela,
+    CONCAT('R$ ', p.valor_parcela) as valor_parcela,
     TO_CHAR(p.data_vencimento, 'DD/MM/YYYY') as vencimento,
     CASE 
-        WHEN p.data_vencimento < CURRENT_DATE THEN '🔴 EM ATRASO'
-        WHEN p.data_vencimento = CURRENT_DATE THEN '🟡 VENCE HOJE'
-        WHEN p.data_vencimento <= CURRENT_DATE + INTERVAL '7 days' THEN '🟠 PRÓXIMO VENCIMENTO'
-        ELSE '🟢 EM DIA'
+        WHEN p.data_vencimento < CURRENT_DATE THEN 'EM ATRASO'
+        WHEN p.data_vencimento = CURRENT_DATE THEN 'VENCE HOJE'
+        WHEN p.data_vencimento <= CURRENT_DATE + INTERVAL '7 days' THEN 'PRÓXIMO VENCIMENTO'
+        ELSE 'EM DIA'
     END as status,
     (p.data_vencimento - CURRENT_DATE) as dias_para_vencimento
 FROM parcela p
@@ -599,7 +599,7 @@ SELECT
     u.nome as anfitriao,
     TO_CHAR(p.data_pagamento, 'YYYY-MM') as mes_ano,
     COUNT(r.id_reserva) as reservas,
-    'R$ ' || SUM(p.valor_total) as receita_mensal
+    CONCAT('R$ ', SUM(p.valor_total)) as receita_mensal
 FROM usuario u
 JOIN anfitriao a ON u.id_usuario = a.id_usuario
 JOIN imovel i ON a.id_usuario = i.id_usuario
@@ -642,8 +642,8 @@ SELECT
         (COUNT(CASE WHEN r.status = 'confirmada' THEN 1 END)::float / 
          NULLIF(COUNT(r.id_reserva), 0) * 100) AS DECIMAL(5,1)
     ) as taxa_sucesso_percent,
-    'R$ ' || COALESCE(SUM(p.valor_total), 0) as receita_total,
-    'R$ ' || CAST(COALESCE(AVG(p.valor_total), 0) AS DECIMAL(10,2)) as ticket_medio,
+    CONCAT('R$ ', COALESCE(SUM(p.valor_total), 0)) as receita_total,
+    CONCAT('R$ ', CAST(COALESCE(AVG(p.valor_total), 0) AS DECIMAL(10,2))) as ticket_medio,
     CAST(COALESCE(AVG(a.nota), 0) AS DECIMAL(3,1)) as nota_media,
     COUNT(DISTINCT ea.id_avaliacao) as total_avaliacoes,
     CASE 
@@ -703,15 +703,15 @@ GROUP BY i.titulo, i.id_imovel, i.capacidade_max
 ORDER BY confirmadas DESC, dias_ocupados DESC;
 
 -- =============================================================================
--- 🛎️ SERVIÇOS E AVALIAÇÕES (4 consultas)
+-- SERVIÇOS E AVALIAÇÕES (4 consultas)
 -- =============================================================================
 
 -- Consulta 13: SERVIÇOS EXTRAS MAIS CONTRATADOS
 SELECT 
     se.nome as servico,
-    'R$ ' || se.valor_servico as valor,
+    CONCAT('R$ ', se.valor_servico) as valor,
     COUNT(sv.id_reserva) as vezes_contratado,
-    'R$ ' || (se.valor_servico * COUNT(sv.id_reserva)) as receita_total
+    CONCAT('R$ ', (se.valor_servico * COUNT(sv.id_reserva))) as receita_total
 FROM servico_extra se
 LEFT JOIN servicos_vinculados sv ON se.id_servico = sv.id_servico
 GROUP BY se.id_servico, se.nome, se.valor_servico
@@ -721,7 +721,7 @@ ORDER BY COUNT(sv.id_reserva) DESC;
 SELECT 
     u.nome AS hospede, 
     se.nome AS servico,
-    'R$ ' || se.valor_servico as valor,
+    CONCAT('R$ ', se.valor_servico) as valor,
     COUNT(*) as vezes_contratado
 FROM reserva r
 JOIN servicos_vinculados sv ON r.id_reserva = sv.id_reserva
@@ -774,18 +774,18 @@ GROUP BY pc.id_politica, pc.tipo_politica
 ORDER BY taxa_cancelamento ASC;
 
 -- =============================================================================
--- 🔄 CANCELAMENTOS E POLÍTICAS (2 consultas)
+-- CANCELAMENTOS E POLÍTICAS (2 consultas)
 -- =============================================================================
 
 -- Consulta 17: CANCELAMENTOS E IMPACTO FINANCEIRO
 SELECT 
     c.data_cancelamento as data_cancel,
     c.tipo_cancelamento,
-    'R$ ' || p.valor_total as valor_reserva,
-    COALESCE('R$ ' || e.valor_estorno, 'Sem estorno') as valor_estorno,
+    CONCAT('R$ ', p.valor_total) as valor_reserva,
+    COALESCE(CONCAT('R$ ', e.valor_estorno), 'Sem estorno') as valor_estorno,
     CASE 
-        WHEN e.valor_estorno IS NULL THEN 'R$ ' || p.valor_total
-        ELSE 'R$ ' || (p.valor_total - e.valor_estorno)
+        WHEN e.valor_estorno IS NULL THEN CONCAT('R$ ', p.valor_total)
+        ELSE CONCAT('R$ ', (p.valor_total - e.valor_estorno))
     END as receita_liquida
 FROM cancelamento c
 JOIN reserva_cancelada rc ON c.id_cancelamento = rc.id_cancelamento
@@ -798,8 +798,8 @@ ORDER BY c.data_cancelamento DESC;
 SELECT 
     pc.tipo_politica,
     COUNT(*) as total_estornos,
-    'R$ ' || ROUND(AVG(e.valor_estorno), 2) as valor_medio_estorno,
-    'R$ ' || SUM(e.valor_estorno) as valor_total_estornos
+    CONCAT('R$ ', ROUND(AVG(e.valor_estorno), 2)) as valor_medio_estorno,
+    CONCAT('R$ ', SUM(e.valor_estorno)) as valor_total_estornos
 FROM politica_cancelamento pc
 JOIN imovel i ON pc.id_politica = i.id_politica
 JOIN reserva r ON i.id_imovel = r.id_imovel
@@ -870,11 +870,11 @@ SELECT
 UNION ALL
 SELECT 
     'Receita Total',
-    'R$ ' || (SELECT COALESCE(SUM(valor_total), 0) FROM pagamento)::text
+    CONCAT('R$ ', (SELECT COALESCE(SUM(valor_total), 0) FROM pagamento)::text)
 UNION ALL
 SELECT 
     'Nota Média Geral',
-    (SELECT COALESCE(ROUND(AVG(nota), 1), 0) FROM avaliacao)::text || '/5';
+    CONCAT((SELECT COALESCE(ROUND(AVG(nota), 1), 0) FROM avaliacao)::text, '/5');
 
 -- ============================================================================
 -- FIM DAS CONSULTAS - TOTAL: 21 CONSULTAS 
