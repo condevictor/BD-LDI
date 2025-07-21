@@ -26,14 +26,14 @@ python src/apresentacao_ldi.py
 
 ## ⚙️ Configuração do Banco
 
-Edite o arquivo `config.ini`:
-```ini
-[DATABASE]
-HOST = localhost
-PORT = 5432
-DATABASE = ldi
-USER = ldi
-PASSWORD = ldi123
+Crie um arquivo `.env` na raiz:
+```
+POSTGRES_PASSWORD=ldi123
+POSTGRES_USER=ldi
+POSTGRES_DB=ldi
+
+PGADMIN_DEFAULT_EMAIL=ldi@gmail.com
+PGADMIN_DEFAULT_PASSWORD=ldi123
 ```
 
 ## 📁 Estrutura do Projeto
