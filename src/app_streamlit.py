@@ -3,8 +3,8 @@ import psycopg2
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import configparser
 from datetime import datetime
+from database import db_manager
 
 # Configuração da página
 st.set_page_config(
@@ -139,42 +139,16 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-@st.cache_data
-def carregar_configuracao():
-    """Carrega configurações do banco"""
-    config = configparser.ConfigParser()
-    config.read('config.ini', encoding='utf-8')
-    return {
-        'host': config['DATABASE']['HOST'],
-        'port': int(config['DATABASE']['PORT']), 
-        'database': config['DATABASE']['DATABASE'],
-        'user': config['DATABASE']['USER'],
-        'password': config['DATABASE']['PASSWORD']
-    }
-
-def conectar_banco():
-    """Conecta ao banco PostgreSQL"""
-    try:
-        config = carregar_configuracao()
-        conn = psycopg2.connect(**config)
-        return conn
-    except Exception as e:
-        st.error(f"Erro ao conectar: {e}")
-        return None
-
 def executar_consulta(sql):
     """Executa consulta e retorna DataFrame"""
-    conn = conectar_banco()
-    if conn:
-        try:
-            df = pd.read_sql_query(sql, conn)
-            conn.close()
-            return df
-        except Exception as e:
-            st.error(f"Erro na consulta: {e}")
-            conn.close()
-            return pd.DataFrame()
-    return pd.DataFrame()
+    try:
+        conn = db_manager.get_connection()
+        df = pd.read_sql_query(sql, conn)
+        conn.close()
+        return df
+    except Exception as e:
+        st.error(f"Erro na consulta: {e}")
+        return pd.DataFrame()
 
 def criar_grafico_receita_imoveis(df):
     """Cria gráfico de receita por imóvel"""

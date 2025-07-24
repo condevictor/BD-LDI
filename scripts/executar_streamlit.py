@@ -7,38 +7,17 @@ Inicializa o banco de dados e executa a aplicação web
 import subprocess
 import sys
 import os
-import psycopg2
-import configparser
 
-def carregar_configuracao():
-    """Carrega configurações do banco"""
-    config = configparser.ConfigParser()
-    config.read('../config.ini', encoding='utf-8')
-    return {
-        'host': config['DATABASE']['HOST'],
-        'port': int(config['DATABASE']['PORT']), 
-        'database': config['DATABASE']['DATABASE'],
-        'user': config['DATABASE']['USER'],
-        'password': config['DATABASE']['PASSWORD']
-    }
+# Adicionar src ao path para importar database
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+from database import db_manager
 
 def inicializar_banco():
     """Inicializa o banco de dados"""
     print("🔧 Inicializando banco de dados...")
     
     try:
-        config = carregar_configuracao()
-        conn = psycopg2.connect(**config)
-        cursor = conn.cursor()
-        
-        # Executar script SQL
-        with open('../SQL/v2-ldi.sql', 'r', encoding='utf-8') as file:
-            sql_script = file.read()
-            cursor.execute(sql_script)
-            conn.commit()
-        
-        cursor.close()
-        conn.close()
+        db_manager.execute_script('SQL/v2-ldi.sql')
         print("✅ Banco de dados inicializado com sucesso!")
         return True
         
@@ -51,18 +30,31 @@ def executar_streamlit():
     print("🚀 Iniciando aplicação Streamlit...")
     print("📱 A aplicação será aberta no seu navegador em: http://localhost:8501")
     print("🛑 Para parar, pressione Ctrl+C")
+    print("\n⚠️  IMPORTANTE: Use SEMPRE 'streamlit run' para executar o app!")
+    print("   ❌ NÃO: python src/app_streamlit.py")
+    print("   ✅ SIM: streamlit run src/app_streamlit.py")
     
     try:
+        # Caminho correto para o app_streamlit.py
+        app_path = os.path.join("..", "src", "app_streamlit.py")
+        if not os.path.exists(app_path):
+            app_path = os.path.join("src", "app_streamlit.py")
+        
         subprocess.run([
-            sys.executable, "-m", "streamlit", "run", "../src/app_streamlit.py",
+            sys.executable, "-m", "streamlit", "run", app_path,
             "--server.port=8501",
             "--server.address=localhost",
             "--browser.gatherUsageStats=false"
         ])
     except KeyboardInterrupt:
         print("\n👋 Aplicação encerrada!")
+    except FileNotFoundError:
+        print("❌ Streamlit não está instalado!")
+        print("🔧 Instale com: pip install streamlit")
     except Exception as e:
         print(f"❌ Erro ao executar Streamlit: {e}")
+        print("\n🔧 Tente executar manualmente:")
+        print("   streamlit run src/app_streamlit.py")
 
 def main():
     """Função principal"""

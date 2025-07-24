@@ -10,6 +10,3 @@ psycopg2-binary>=2.9.7
 
 # Manipulação de Dados
 pandas>=2.1.0
-
-# Configurações
-configparser

@@ -1,78 +1,111 @@
-# 🏠 Sistema de Locação de Imóveis - BD-LDI
+# Sistema de Locação de Imóveis - BD-LDI
 
-Sistema de demonstração acadêmica com banco PostgreSQL e 21 consultas organizadas por categoria.
+Sistema de banco de dados PostgreSQL com 21 consultas SQL para gerenciamento de locação de imóveis.
 
 ## 🚀 Como Executar
 
-### ⚡ Opção 1: Interface Web (Streamlit)
+### Opção 1: Usando requirements (Recomendado)
 ```bash
-# 1. Instalar dependências
-pip install -r requirements.txt
-pip install streamlit psycopg2 pandas plotly configparser # Caso o comando acima não consiga ser executado
+# Instalar dependências
+pip install -r requirements_clean.txt
 
-# 2. Executar aplicação web
-streamlit run src/app_streamlit.py --browser.gatherUsageStats=false
+# Iniciar PostgreSQL  
+docker-compose up -d
+
+# Executar sistema
+cd src
+python apresentacao_clean.py
 ```
-**Acesse:** http://localhost:8501
 
-### 💻 Opção 2: Terminal Python
+### Opção 2: Instalação manual - Terminal apenas
 ```bash
-# 1. Instalar dependências
-pip install psycopg2 configparser
+# Dependências mínimas para terminal
+pip install psycopg2-binary
 
-# 2. Executar no terminal
-python src/apresentacao_ldi.py
+# Iniciar PostgreSQL
+docker-compose up -d
+
+# Executar sistema
+cd src
+python apresentacao_clean.py
 ```
 
-## ⚙️ Configuração do Banco
+### Opção 3: Com Streamlit (Interface Web)
+```bash
+# Dependências completas
+pip install psycopg2-binary streamlit pandas plotly
 
-Edite o arquivo `config.ini`:
-```ini
-[DATABASE]
-HOST = localhost
-PORT = 5432
-DATABASE = ldi
-USER = ldi
-PASSWORD = ldi123
+# Iniciar PostgreSQL
+docker-compose up -d
+
+# Executar interface web
+cd scripts
+python executar_streamlit.py
 ```
 
-## 📁 Estrutura do Projeto
+### Opção 4: Apenas arquivos essenciais (PDF/Entrega)
+```bash
+# Se você tem apenas: apresentacao_ldi.py, database.py e v2-ldi.sql
+
+# 1. Instalar dependência
+pip install psycopg2-binary
+
+# 2. Configurar caminhos nos arquivos Python:
+#    - Em database.py linha ~22: altere para o caminho do seu .env
+#    - Em apresentacao_ldi.py linha ~49: altere para o caminho do seu v2-ldi.sql
+#    - Em apresentacao_ldi.py linha ~89: altere para o caminho do seu v2-ldi.sql
+
+# 3. Criar .env com suas credenciais PostgreSQL
+
+# 4. Executar
+python apresentacao_ldi.py
+```
+
+## ⚙️ Configuração
+
+Arquivo `.env`:
+```env
+POSTGRES_PASSWORD=ldi123
+POSTGRES_USER=ldi
+POSTGRES_DB=ldi
+
+PGADMIN_DEFAULT_EMAIL=ldi@gmail.com
+PGADMIN_DEFAULT_PASSWORD=ldi123
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=ldi
+DB_USER=ldi
+DB_PASSWORD=ldi123
+```
+
+## 📁 Arquivos Principais
 
 ```
 BD-LDI/
-├── 📄 README.md           # Este arquivo
-├── ⚙️ config.ini          # Configuração do banco
-├── 📋 requirements.txt    # Dependências Python
-├── 🗂️ src/               # Código fonte
-│   ├── app_streamlit.py   # Interface web
-│   └── apresentacao_ldi.py # Interface terminal
-├── 🗂️ SQL/               # Scripts do banco
-│   ├── v2-ldi.sql         # Schema completo
-│   └── docker-compose.yaml # Docker PostgreSQL
-├── 🗂️ scripts/           # Scripts auxiliares
-│   └── executar_streamlit.py # Inicializador
-└── 🗂️ docs/              # Documentação
-    ├── GUIA_APRESENTACAO.md
-    └── STREAMLIT_README.md
+├── .env                      # Configurações
+├── requirements.txt    # Dependências  
+├── src/
+│   ├── database.py    # Conexão com banco
+│   └── apresentacao_ldi.py # Sistema principal
+└── SQL/v2-ldi.sql           # Schema e dados
 ```
 
-## 🎯 Funcionalidades
+## 🗄️ Consultas Implementadas
 
-- **21 Consultas SQL** organizadas em 6 categorias
-- **Interface Web** moderna com Streamlit
-- **Interface Terminal** para demonstrações
-- **Visualizações** com gráficos interativos
-- **Export CSV** dos resultados
-- **PostgreSQL** como banco de dados
+**21 consultas organizadas em 6 categorias:**
+1. **Operacionais** - Gestão diária (3 consultas)
+2. **Usuários** - Perfis e cadastros (4 consultas)  
+3. **Financeiras** - Pagamentos e receitas (4 consultas)
+4. **Business Intelligence** - Métricas e KPIs (4 consultas)
+5. **Executivas** - Visão estratégica (3 consultas)
+6. **Administrativas** - Controles internos (3 consultas)
 
-## 📊 Categorias de Consultas
+## 🔧 Solução de Problemas
 
-1. **📋 Operacionais** - Gestão diária
-2. **👥 Usuários e Perfis** - Gerenciamento de users
-3. **💰 Financeiras** - Relatórios de receita
-4. **📈 Business Intelligence** - KPIs e métricas
-5. **👔 Executivas** - Visão estratégica
-6. **🏢 Administrativas** - Controles internos
+**Erro de conexão:** `docker-compose up -d`  
+**Usuário não existe:** Aguarde container inicializar completamente  
+**Porta ocupada:** Altere DB_PORT em .env
 
 ---
-🎓 **Projeto Acadêmico** - Sistema de Banco de Dados PostgreSQL
+**Projeto Acadêmico** - Demonstração PostgreSQL

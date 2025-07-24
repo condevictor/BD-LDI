@@ -443,10 +443,11 @@ INSERT INTO experiencia_avaliada (id_reserva, id_avaliacao) VALUES
 
 
 -- ============================================================================
--- CONSULTAS SQL PARA DEMONSTRAÇÃO - IDÊNTICAS AO SISTEMA PYTHON
+-- CONSULTAS SQL PARA DEMONSTRAÇÃO
 -- ============================================================================
 -- Total: 21 consultas organizadas por categoria
--- Sincronizadas com apresentacao_ldi.py para apresentação consistente
+-- =============================================================================
+
 
 -- =============================================================================
 -- CONSULTAS OPERACIONAIS BÁSICAS (4 consultas)
@@ -610,8 +611,7 @@ WHERE r.status = 'confirmada'
 GROUP BY u.nome, u.id_usuario, TO_CHAR(p.data_pagamento, 'YYYY-MM')
 ORDER BY mes_ano DESC, SUM(p.valor_total) DESC;
 
--- Consulta 21: FLUXO FINANCEIRO COMPLETO POR RESERVA
--- Unifica pagamentos principais e multas para análise integrada
+-- Consulta 9: FLUXO FINANCEIRO COMPLETO POR RESERVA
 SELECT r.id_reserva, 'Principal' as tipo, p.valor_total, p.forma_pagamento, p.data_pagamento
 FROM reserva r
 JOIN gera g ON r.id_reserva = g.id_reserva
@@ -631,7 +631,7 @@ ORDER BY id_reserva, tipo;
 -- BUSINESS INTELLIGENCE (4 consultas)
 -- =============================================================================
 
--- Consulta 9: RANKING DE ANFITRIÕES - PERFORMANCE COMPLETA
+-- Consulta 10: RANKING DE ANFITRIÕES - PERFORMANCE COMPLETA
 SELECT 
     u.nome as anfitriao,
     COUNT(DISTINCT i.id_imovel) as total_imoveis,
@@ -664,7 +664,7 @@ LEFT JOIN avaliacao a ON ea.id_avaliacao = a.id_avaliacao
 GROUP BY u.id_usuario, u.nome
 ORDER BY receita_total DESC, nota_media DESC;
 
--- Consulta 10: HÓSPEDES MAIS ATIVOS - RANKING
+-- Consulta 11: HÓSPEDES MAIS ATIVOS - RANKING
 SELECT 
     u.nome, 
     COUNT(*) AS total_reservas,
@@ -675,7 +675,7 @@ JOIN reserva r ON u.id_usuario = r.id_usuario
 GROUP BY u.nome, u.id_usuario
 ORDER BY total_reservas DESC;
 
--- Consulta 11: OCUPAÇÃO POR PERÍODO - ANÁLISE TEMPORAL
+-- Consulta 12: OCUPAÇÃO POR PERÍODO - ANÁLISE TEMPORAL
 SELECT 
     TO_CHAR(r.data_inicio, 'YYYY-MM') as mes_ano,
     COUNT(r.id_reserva) as total_reservas,
@@ -688,7 +688,7 @@ FROM reserva r
 GROUP BY TO_CHAR(r.data_inicio, 'YYYY-MM')
 ORDER BY mes_ano DESC;
 
--- Consulta 12: RELATÓRIO DE OCUPAÇÃO COMPLETO
+-- Consulta 13: RELATÓRIO DE OCUPAÇÃO COMPLETO
 SELECT 
     i.titulo,
     i.capacidade_max as capacidade,
@@ -706,7 +706,7 @@ ORDER BY confirmadas DESC, dias_ocupados DESC;
 -- SERVIÇOS E AVALIAÇÕES (4 consultas)
 -- =============================================================================
 
--- Consulta 13: SERVIÇOS EXTRAS MAIS CONTRATADOS
+-- Consulta 14: SERVIÇOS EXTRAS MAIS CONTRATADOS
 SELECT 
     se.nome as servico,
     CONCAT('R$ ', se.valor_servico) as valor,
@@ -717,7 +717,7 @@ LEFT JOIN servicos_vinculados sv ON se.id_servico = sv.id_servico
 GROUP BY se.id_servico, se.nome, se.valor_servico
 ORDER BY COUNT(sv.id_reserva) DESC;
 
--- Consulta 14: SERVIÇOS EXTRAS - CONTRATAÇÕES POR HÓSPEDE
+-- Consulta 15: SERVIÇOS EXTRAS - CONTRATAÇÕES POR HÓSPEDE
 SELECT 
     u.nome AS hospede, 
     se.nome AS servico,
@@ -730,7 +730,7 @@ JOIN usuario u ON r.id_usuario = u.id_usuario
 GROUP BY u.nome, se.nome, se.valor_servico
 ORDER BY u.nome, vezes_contratado DESC;
 
--- Consulta 15: AVALIAÇÕES E QUALIDADE DOS IMÓVEIS
+-- Consulta 16: AVALIAÇÕES E QUALIDADE DOS IMÓVEIS
 SELECT 
     i.titulo as imovel,
     ROUND(AVG(a.nota), 1) as nota_media,
@@ -751,7 +751,7 @@ GROUP BY i.id_imovel, i.titulo
 HAVING COUNT(a.nota) > 0
 ORDER BY AVG(a.nota) DESC NULLS LAST;
 
--- Consulta 16: EFETIVIDADE DAS POLÍTICAS DE CANCELAMENTO
+-- Consulta 17: EFETIVIDADE DAS POLÍTICAS DE CANCELAMENTO
 SELECT 
     pc.tipo_politica,
     COUNT(DISTINCT i.id_imovel) as imoveis_com_politica,
@@ -777,7 +777,7 @@ ORDER BY taxa_cancelamento ASC;
 -- CANCELAMENTOS E POLÍTICAS (2 consultas)
 -- =============================================================================
 
--- Consulta 17: CANCELAMENTOS E IMPACTO FINANCEIRO
+-- Consulta 18: CANCELAMENTOS E IMPACTO FINANCEIRO
 SELECT 
     c.data_cancelamento as data_cancel,
     c.tipo_cancelamento,
@@ -794,7 +794,7 @@ LEFT JOIN gera_estorno ge ON c.id_cancelamento = ge.id_cancelamento
 LEFT JOIN estorno e ON ge.id_estorno = e.id_estorno
 ORDER BY c.data_cancelamento DESC;
 
--- Consulta 18: ANÁLISE DE ESTORNOS POR POLÍTICA
+-- Consulta 19: ANÁLISE DE ESTORNOS POR POLÍTICA
 SELECT 
     pc.tipo_politica,
     COUNT(*) as total_estornos,
@@ -813,7 +813,7 @@ GROUP BY pc.tipo_politica;
 -- RELATÓRIOS ESPECIAIS (2 consultas)
 -- =============================================================================
 
--- Consulta 19: HISTÓRICO COMPLETO - CASA DA PRAIA
+-- Consulta 20: HISTÓRICO COMPLETO - CASA DA PRAIA
 SELECT 
     u.nome as hospede,
     TO_CHAR(r.data_inicio, 'DD/MM/YYYY') as check_in,
@@ -835,7 +835,7 @@ LEFT JOIN cancelamento c ON rc.id_cancelamento = c.id_cancelamento
 WHERE i.titulo = 'Casa da Praia'
 ORDER BY r.data_inicio DESC;
 
--- Consulta 20: DASHBOARD EXECUTIVO - KPIs DO NEGÓCIO
+-- Consulta 21: DASHBOARD EXECUTIVO - KPIs DO NEGÓCIO
 SELECT 
     'Total de Usuários' as metrica,
     (SELECT COUNT(*) FROM usuario)::text as valor
@@ -877,5 +877,5 @@ SELECT
     CONCAT((SELECT COALESCE(ROUND(AVG(nota), 1), 0) FROM avaliacao)::text, '/5');
 
 -- ============================================================================
--- FIM DAS CONSULTAS - TOTAL: 21 CONSULTAS 
+-- FIM DAS CONSULTAS
 -- ============================================================================
