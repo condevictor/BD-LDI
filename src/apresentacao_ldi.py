@@ -48,7 +48,7 @@ def extrair_consultas():
     
     try:
         # Busca o arquivo SQL
-        for sql_path in ["SQL/v2-ldi.sql", "../SQL/v2-ldi.sql"]:
+        for sql_path in ["./v2-ldi.sql", "SQL/v2-ldi.sql", "../SQL/v2-ldi.sql"]:
             if os.path.exists(sql_path):
                 with open(sql_path, 'r', encoding='utf-8') as f:
                     linhas = f.readlines()
